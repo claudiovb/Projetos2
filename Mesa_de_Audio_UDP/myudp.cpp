@@ -6,12 +6,15 @@ MyUDP::MyUDP(QObject *parent) :
 {
     // create a QUDP socket
     socket = new QUdpSocket(this);
+    host  = new QHostAddress("150.162.83.115");
+    bcast = new QHostAddress("150.162.83.115");
+
 
     // The most common way to use QUdpSocket class is
     // to bind to an address and port using bind()
     // bool QAbstractSocket::bind(const QHostAddress & address,
     //     quint16 port = 0, BindMode mode = DefaultForPlatform)
-    socket->bind(QHostAddress::LocalHost, 9283);
+    socket->bind(*bcast, 9283);
 
     connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
 }
@@ -25,7 +28,7 @@ void MyUDP::HelloUDP()
     // to the host address and at port.
     // qint64 QUdpSocket::writeDatagram(const QByteArray & datagram,
     //                      const QHostAddress & host, quint16 port)
-    socket->writeDatagram(Data, QHostAddress::LocalHost, 9283);
+    socket->writeDatagram(Data, *bcast, 9283);
 }
 
 void MyUDP::readyRead()

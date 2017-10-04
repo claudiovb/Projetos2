@@ -19,6 +19,7 @@ public slots:
 
 private:
     QUdpSocket *socket;
+    QHostAddress *bcast,*host;
 
 };
 
