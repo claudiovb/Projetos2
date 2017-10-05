@@ -11,26 +11,25 @@
 
 
 
-const char* ssid = "O_Xilarau";
-const char* password = "naotemsenha";
-const int influx_port = 8888;
-const char* influx_host = "10.42.0.1";
+const char* ssid = "teste2";
+const char* password = "a1b2c3d4e5";
+const int influx_port = 9283;
+const char* influx_host = "192.168.1.233";
 
 
 WiFiUDP Client;
 
 byte serdata = 0;
 byte fromserver = 0;
-byte header = 0xA,startT = 0x3,endT = 0x2;
+byte header = 0x2,startT = 0x3,endT = 0x2;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
   Serial.begin(115200);
-  Serial.println("Ta funcionando");
+ 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  Serial.println();
-  Serial.println();
+ // WiFi.softAP(ssid, password);
   Serial.print("Wait for WiFi... ");
 
   while (WiFi.status() != WL_CONNECTED)
@@ -38,52 +37,77 @@ void setup() {
     Serial.print(".");
     delay(500);
   }
+  
   Serial.println("");
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
-  Client.begin(81);
+  Client.begin(8888);
+  
 
 }
+char packetBuffer[BUFF];  //buffer to hold incoming packet
+bool trasmitting = false;
 // the loop function runs over and over again until power down or reset
 void loop() {
-  udpsend();
+  int packetSize = Client.parsePacket();
+  if(packetSize){
+    Serial.print("Received packet of size ");
+    Serial.println(packetSize);
+    Serial.print("From ");
+    IPAddress remote = Client.remoteIP();
+    for (int i = 0; i < 4; i++) {
+      Serial.print(remote[i], DEC);
+      if (i < 3) {
+        Serial.print(".");
+      }
+    }
+    Serial.print(", port ");
+    Serial.println(Client.remotePort());
+     Client.read(packetBuffer, BUFF);
+     Serial.println(packetBuffer);
+     header = packetBuffer[0];
+     Serial.println(header);
+    switch(header){
+      case '0':
+      trasmitting = true;
+      Serial.println(trasmitting);
+      break;
+      case 'f':
+      trasmitting = false;
+      Serial.println(trasmitting);
+      break;
+      default:
+      break;  
+    }
+  }
+  if(trasmitting){
+    udpsend();
+  }
    
 }
 static int sin_time = 0;
 char message[BUFF] = {0};
-String my = "teste";
-bool transflag = false,stopflag = false;
+char my[] = "teste";
 void udpsend()
 {
-  const char ip[] = "192.168.15.9";
-  Client.beginPacket(ip, 8888);
+  senwrite();
+  Client.beginPacket(influx_host, influx_port);
+  Client.write(message,sizeof(message));
+  Client.endPacket();
+
   
-  if(transflag){
-    senwrite();
+/*
     Client.write(message, sizeof(message));
     Client.endPacket();
-  } else{
-    if(!stopflag){
-      Serial.println("Trying to start transmission");
-      message[0] = 0x3;
-      message[1] = 0x3;
-      message[2] = 0x3;
-      message[3] = 0x3;
-      
-      Client.write(message,sizeof(message));
-      Client.endPacket();
-      transflag = true;
 
-    }else{
-//      Serial.println("Ending transmission");
-      message[0] = endT;
       Client.write(message,sizeof(message));
       Client.endPacket();
-    }
-  }
-  //Serial.println(my);
-  //delay(1000);
+
+      Client.write(message,sizeof(message));
+      Client.endPacket();
+*/
+
   return;
 }
 void  senwrite(){
@@ -95,7 +119,7 @@ void  senwrite(){
   message[1] = header;
   for(int i= 0; i < (BUFF >> 1) - 2; i++){
     value = sin(((double)500/(double)48000)*(2*_PI)*sin_time);
-    x = (short)round(16383*value);
+    x = (short)round(32767*value);
     xlow = (char)(x & 0xff);
     xhigh= (char)(x >> 8);
     message[2*i+2] = xhigh;
@@ -103,11 +127,7 @@ void  senwrite(){
     //Serial.println(x);
     sin_time++;
   }
-  if(sin_time>48000){
-    sin_time = 0;
-    stopflag = true;
-    transflag = false;
-  }
+  Serial.println("seno escrito");
   return;
 
 }

@@ -12,6 +12,7 @@ class MyUDP : public QObject
 public:
     explicit MyUDP(QObject *parent = 0);
     void HelloUDP();
+    void Transmission(bool transm);
 signals:
 
 public slots:

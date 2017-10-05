@@ -2,7 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
+#include "ui_mainwindow.h"
+#include "myudp.h"
 namespace Ui {
 class MainWindow;
 }
@@ -21,6 +22,7 @@ private slots:
     void on_pushButton_2_clicked();
 
 private:
+    MyUDP* Udp;
     Ui::MainWindow *ui;
 };
 
