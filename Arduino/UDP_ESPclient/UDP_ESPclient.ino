@@ -21,7 +21,7 @@ WiFiUDP Client;
 
 byte serdata = 0;
 byte fromserver = 0;
-byte header = 0x2,startT = 0x3,endT = 0x2;
+char header = 'A',startT = 0x3,endT = 0x2;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -95,6 +95,7 @@ void udpsend()
   Client.beginPacket(influx_host, influx_port);
   Client.write(message,sizeof(message));
   Client.endPacket();
+//  Serial.println(message);
 
   
 /*
@@ -115,19 +116,22 @@ void  senwrite(){
   char xlow = 0;
   char xhigh = 0;
   short x = 0;
-  message[0] = header;
-  message[1] = header;
+  message[0] = 'A';
+  message[1] = 'b';
+  //Serial.println(header);
   for(int i= 0; i < (BUFF >> 1) - 2; i++){
     value = sin(((double)500/(double)48000)*(2*_PI)*sin_time);
-    x = (short)round(32767*value);
+    x = (short)round(16384*value);
+   // x = 0xAAAA;
     xlow = (char)(x & 0xff);
     xhigh= (char)(x >> 8);
     message[2*i+2] = xhigh;
     message[2*i+3] = xlow;
     //Serial.println(x);
     sin_time++;
+    if(sin_time >= 48000) sin_time = 0;
   }
-  Serial.println("seno escrito");
+  //Serial.println("seno escrito");
   return;
 
 }

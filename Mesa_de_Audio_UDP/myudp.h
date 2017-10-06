@@ -19,9 +19,13 @@ public slots:
     void readyRead();
 
 private:
+    int filenumber = 0;
+    FILE* fp = NULL;
     QUdpSocket *socket;
     QHostAddress *bcast,*host;
-
+    bool DbyteToShort(const char* pBuff,int size);
+    bool SaveFile(ushort* audioBuff,int size);
+    void CloseFile();
 };
 
 #endif // MYUDP_H
