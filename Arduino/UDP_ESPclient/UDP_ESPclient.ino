@@ -5,28 +5,31 @@
 */
 #define _PI 3.14159 
 #define BUFF 512
+#define CS_pin 15
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #include <math.h>  
-
-
+#include "ESPSpi.h"
 
 const char* ssid = "teste2";
 const char* password = "a1b2c3d4e5";
 const int influx_port = 9283;
 const char* influx_host = "192.168.1.233";
-
-
+ESPSpi oi;
 WiFiUDP Client;
 
 byte serdata = 0;
 byte fromserver = 0;
 char header = 'A',startT = 0x3,endT = 0x2;
 
+
 // the setup function runs once when you press reset or power the board
 void setup() {
   Serial.begin(115200);
- 
+  SPI.begin();
+  SPI.setDataMode(SPI_MODE0);
+  SPI.setBitOrder(MSBFIRST);
+  SPI.setFrequency(1000000);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
  // WiFi.softAP(ssid, password);
@@ -43,7 +46,7 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
   Client.begin(8888);
-  
+//  int  p = teste();
 
 }
 char packetBuffer[BUFF];  //buffer to hold incoming packet
@@ -71,11 +74,9 @@ void loop() {
     switch(header){
       case '0':
       trasmitting = true;
-      Serial.println(trasmitting);
       break;
       case 'f':
       trasmitting = false;
-      Serial.println(trasmitting);
       break;
       default:
       break;  
@@ -95,19 +96,6 @@ void udpsend()
   Client.beginPacket(influx_host, influx_port);
   Client.write(message,sizeof(message));
   Client.endPacket();
-//  Serial.println(message);
-
-  
-/*
-    Client.write(message, sizeof(message));
-    Client.endPacket();
-
-      Client.write(message,sizeof(message));
-      Client.endPacket();
-
-      Client.write(message,sizeof(message));
-      Client.endPacket();
-*/
 
   return;
 }
