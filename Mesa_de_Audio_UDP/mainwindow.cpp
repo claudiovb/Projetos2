@@ -8,7 +8,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     Udp = new MyUDP();
     Udp->HelloUDP();
+    connect(ui->horizontalSlider,SIGNAL(valueChanged(int)),Udp,SLOT(parameter1Changed(int)));
+    connect(ui->horizontalSlider_2,SIGNAL(valueChanged(int)),Udp,SLOT(parameter2Changed(int)));
 }
+
 
 MainWindow::~MainWindow()
 {

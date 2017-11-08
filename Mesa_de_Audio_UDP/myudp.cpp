@@ -70,10 +70,14 @@ void MyUDP::readyRead()
 }
 void MyUDP::Transmission(bool transm){
     QByteArray Data;
-    if(transm) Data.setNum(0x0,16);
+    if(transm){
+        Data.setNum(0x0,16);
+        canChangeEffect = false;
+    }
     else{
         Data.setNum(0xf,16);
         CloseFile();
+        canChangeEffect = true;
     }
     socket->writeDatagram(Data, *bcast, 8888);
 
@@ -109,5 +113,32 @@ void MyUDP::CloseFile(){
         fclose(fp);
         fp = NULL;
     }
+}
+
+void MyUDP::parameter1Changed(int value){
+    QByteArray Data;
+    qDebug() << "Value changed: " << value;
+    std::string s = std::to_string(value);
+    char const *pchar = s.c_str();  //use char const* as target type
+    if(canChangeEffect){
+        Data.setNum(0xA,16);
+        Data.append(pchar);
+        qDebug() << "Value changed: " << Data;
+        socket->writeDatagram(Data, *bcast, 8888);
+
+    }
+}
+void MyUDP::parameter2Changed(int value){
+    QByteArray Data;
+    std::string s = std::to_string(value);
+    char const *pchar = s.c_str();  //use char const* as target type
+    if(canChangeEffect){
+        Data.setNum(0xB,16);
+        Data.append(pchar);
+        qDebug() << "Value changed: " << Data;
+        socket->writeDatagram(Data, *bcast, 8888);
+
+    }
+
 }
 

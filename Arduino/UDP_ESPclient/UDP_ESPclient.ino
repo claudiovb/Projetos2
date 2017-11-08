@@ -5,31 +5,49 @@
 */
 #define _PI 3.14159 
 #define BUFF 512
-#define CS_pin 15
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #include <math.h>  
-#include "ESPSpi.h"
-
+/*-------------------------------------------------------------------------------------------------------------------------------
+ * ---------------------------WI-FI Variables------------------------------------------------------------------------------------
+ ------------------------------------------------------------------------------------------------------------------------------*/
 const char* ssid = "teste2";
 const char* password = "a1b2c3d4e5";
 const int influx_port = 9283;
 const char* influx_host = "192.168.1.233";
-ESPSpi oi;
 WiFiUDP Client;
 
 byte serdata = 0;
 byte fromserver = 0;
 char header = 'A',startT = 0x3,endT = 0x2;
-
+/*-------------------------------------------------------------------------------------------------------------------------------
+ * ---------------------------Serial Variables------------------------------------------------------------------------------------
+ ------------------------------------------------------------------------------------------------------------------------------*/
+uint8_t dataString[BUFF];
+size_t dataLength;
+size_t serial_index = 2;
+// data Serial buffer
+uint16_t AudioString[BUFF];
+size_t AudioLength;
+bool trasmitting = false;
+void SerialCatch(uint8_t *dataString, size_t *dataLength)
+{
+  
+  if (Serial.available() > 1)
+  {
+     dataLength[0] = Serial.available();
+     Serial.readBytes(&dataString[serial_index], dataLength[0]);     
+  }
+  if(trasmitting)
+    serial_index += dataLength[0];
+}
+void SerialSend(uint8_t *paramSend,int packetSize){
+  Serial.write(paramSend,packetSize)
+}
 
 // the setup function runs once when you press reset or power the board
 void setup() {
   Serial.begin(115200);
-  SPI.begin();
-  SPI.setDataMode(SPI_MODE0);
-  SPI.setBitOrder(MSBFIRST);
-  SPI.setFrequency(1000000);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
  // WiFi.softAP(ssid, password);
@@ -45,44 +63,55 @@ void setup() {
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+  Serial.flush();
   Client.begin(8888);
 //  int  p = teste();
+  dataString[0] = 'A';
+  dataString[1] = 'b';
 
 }
 char packetBuffer[BUFF];  //buffer to hold incoming packet
-bool trasmitting = false;
 // the loop function runs over and over again until power down or reset
 void loop() {
+
+  delayMicroseconds(1);
+  SerialCatch(dataString, &dataLength);
   int packetSize = Client.parsePacket();
   if(packetSize){
-    Serial.print("Received packet of size ");
-    Serial.println(packetSize);
-    Serial.print("From ");
-    IPAddress remote = Client.remoteIP();
-    for (int i = 0; i < 4; i++) {
-      Serial.print(remote[i], DEC);
-      if (i < 3) {
-        Serial.print(".");
-      }
-    }
-    Serial.print(", port ");
-    Serial.println(Client.remotePort());
+   // Serial.print("Received packet of size ");
+    //Serial.println(packetSize);
+   // Serial.print("From ");
+   // IPAddress remote = Client.remoteIP();
+    //for (int i = 0; i < 4; i++) {
+    //  Serial.print(remote[i], DEC);
+     // if (i < 3) {
+      //  Serial.print(".");
+     // }
+   // }
+   // Serial.print(", port ");
+   // Serial.println(Client.remotePort());
      Client.read(packetBuffer, BUFF);
-     Serial.println(packetBuffer);
+    // Serial.println(packetBuffer);
      header = packetBuffer[0];
-     Serial.println(header);
+    // Serial.println(header);
     switch(header){
       case '0':
       trasmitting = true;
       break;
       case 'f':
       trasmitting = false;
+      break;  
+      case 'a':
+      SerialSend(packetBuffer,packetSize);
+      break;
+      case 'b':
+      SerialSend(packetBuffer,packetSize);
       break;
       default:
-      break;  
+      break;
     }
   }
-  if(trasmitting){
+  if(trasmitting || serial_index > 256){
     udpsend();
   }
    
@@ -95,8 +124,10 @@ void udpsend()
   senwrite();
   Client.beginPacket(influx_host, influx_port);
   Client.write(message,sizeof(message));
+  //Client.write(dataString,index);
   Client.endPacket();
-
+  serial_index = 2
+  ;
   return;
 }
 void  senwrite(){

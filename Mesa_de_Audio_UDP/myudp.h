@@ -17,8 +17,10 @@ signals:
 
 public slots:
     void readyRead();
-
+    void parameter1Changed(int value);
+    void parameter2Changed(int value);
 private:
+    bool canChangeEffect = true;
     int filenumber = 0;
     FILE* fp = NULL;
     QUdpSocket *socket;
@@ -26,6 +28,7 @@ private:
     bool DbyteToShort(const char* pBuff,int size);
     bool SaveFile(ushort* audioBuff,int size);
     void CloseFile();
+
 };
 
 #endif // MYUDP_H
