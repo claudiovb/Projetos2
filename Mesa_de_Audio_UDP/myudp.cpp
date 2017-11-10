@@ -56,13 +56,14 @@ void MyUDP::readyRead()
    // qDebug() << "Message: " << buffer;
 
     pBuffer = buffer.operator const char *();
-    if(pBuffer[0] == 'A' && pBuffer[1] == 'b')
-        sucess = DbyteToShort(pBuffer,buffer.size());
-
+    if(pBuffer[0] == 'A' && pBuffer[1] == 'b'){
+        if(buffer.size() > 2)
+            sucess = DbyteToShort(pBuffer,buffer.size());
+    }
     if(!sucess){
-        Data.setNum(0xf,16);
-        socket->writeDatagram(Data, *bcast, 8888);
-        qCritical() << "critical error line 61,stopping transmission";
+        //Data.setNum(0xf,16);
+        //socket->writeDatagram(Data, *bcast, 8888);
+        qCritical() << "No data recieved" << buffer.size();
     }
 
 
@@ -92,10 +93,12 @@ bool MyUDP::DbyteToShort(const char *pBuff,int size){
         //assist = (ushort)c;
         //audioBuff[i] += assist;
     }
-     sucess = SaveFile(audioBuff,(size>>1)-2);
+     sucess = SaveFile(audioBuff,(size>>1)-2); //certo
+   // sucess = SaveFile(pBuff,size);
     return sucess;
 }
-bool MyUDP::SaveFile(ushort* audioBuff,int size){
+//bool MyUDP::SaveFile(const char * audioBuff,int size){
+bool MyUDP::SaveFile(ushort* audioBuff,int size){ //certo
 
     if(fp == NULL){
     std::string filename = "Audio/audiofile";
@@ -105,7 +108,8 @@ bool MyUDP::SaveFile(ushort* audioBuff,int size){
     fp = fopen(c,"wb+");
     filenumber++;
     }
-    fwrite(audioBuff,sizeof(short),size,fp);
+    fwrite(audioBuff,sizeof(short),size,fp); //certo
+   // fwrite(audioBuff,sizeof(char),size,fp);
     return true;
 }
 void MyUDP::CloseFile(){

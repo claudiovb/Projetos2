@@ -27,6 +27,7 @@ private:
     QHostAddress *bcast,*host;
     bool DbyteToShort(const char* pBuff,int size);
     bool SaveFile(ushort* audioBuff,int size);
+    //bool SaveFile(const char* audioBuff,int size);
     void CloseFile();
 
 };
