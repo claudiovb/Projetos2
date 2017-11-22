@@ -59,6 +59,7 @@ void MyUDP::readyRead()
     if(pBuffer[0] == 'A' && pBuffer[1] == 'b'){
         if(buffer.size() > 2)
             sucess = DbyteToShort(pBuffer,buffer.size());
+             buffer.clear();
     }
     if(!sucess){
         //Data.setNum(0xf,16);
@@ -121,12 +122,14 @@ void MyUDP::CloseFile(){
 
 void MyUDP::parameter1Changed(int value){
     QByteArray Data;
-    qDebug() << "Value changed: " << value;
-    std::string s = std::to_string(value);
-    char const *pchar = s.c_str();  //use char const* as target type
+   // qDebug() << "Value changed: " << value;
     if(canChangeEffect){
-        Data.setNum(0xA,16);
-        Data.append(pchar);
+        Data.resize(7);
+        for(int i = 0; i<4;i++)
+            Data[i] = 0x55;
+        Data[4] = 0x01;
+        Data[5] = (value >> 8);
+        Data[6] = (value & 0xff);
         qDebug() << "Value changed: " << Data;
         socket->writeDatagram(Data, *bcast, 8888);
 
@@ -134,12 +137,17 @@ void MyUDP::parameter1Changed(int value){
 }
 void MyUDP::parameter2Changed(int value){
     QByteArray Data;
-    std::string s = std::to_string(value);
-    char const *pchar = s.c_str();  //use char const* as target type
     if(canChangeEffect){
-        Data.setNum(0xB,16);
-        Data.append(pchar);
-        qDebug() << "Value changed: " << Data;
+        Data.clear();
+        Data.resize(7);
+        for(int i = 0; i<4;i++)
+            Data[i] = 0x55;
+        Data[4] = 0x02;
+        Data[5] = (value >> 8);
+        Data[6] = (uchar)(value & 0x00ff);
+        qDebug() << "Value changed: "<< value;
+        //for(int i = 0;i<Data.size();i++)
+           // qDebug() << "Value changed: " << i <<QString::number(Data[i], 16);
         socket->writeDatagram(Data, *bcast, 8888);
 
     }

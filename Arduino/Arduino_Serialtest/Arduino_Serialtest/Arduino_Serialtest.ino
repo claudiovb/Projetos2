@@ -5,24 +5,33 @@ void setup()
 {
   // put your setup code here, to run once:
   Serial.begin(115200);
- // Serial.println("Comecando");
+  Serial.println("Comecando");
 }
 
-#define BUFF 20
+#define BUFF 10
 char recording = 'r',stopping = 's';
 size_t dataLength;
-char dataString[10] = {0};
+byte dataString[10] = {0};
 bool transmitting = false;
 void  senwrite();
 void loop() 
 {
-  if (Serial.available() >= 1)
+   short value_recieved = 0;
+  if (Serial.available() >= 7)
   {
     //Serial.println("recebi dados");
      dataLength = Serial.available();
      Serial.readBytes(dataString, dataLength); 
      Serial.flush();    
+     for(int i = 0; i< dataLength-2;i++)
+      Serial.print(dataString[i],HEX);
+  value_recieved =  (short)(((short)dataString[5]) << 8) | (0xff & dataString[6]);
+  Serial.println(value_recieved);
   }
+ 
+  
+   
+  
   
   switch(dataString[0])
   {
@@ -66,27 +75,33 @@ void  senwrite()
   char xhigh = 0;
   short x = 0;
   
-  message[0] = 'A';
-  message[1] = 'b';
+
   
   //Serial.println(header);
-  for(int i= 0; i < (BUFF); i++)
+  for(int i= 0; i < (BUFF >> 1); i++)
   {
     //value = sin(((double)500/(double)48000)*(2*_PI)*sin_time);
     //x = (short)round(16384*value);
-    x = 0x7FFF;
+    x = (short)0xAAAA;
     xlow = (char)(x & 0xff);
     xhigh= (char)(x >> 8);
-    message[2*i+2] = xhigh;
-    message[2*i+3] = xlow;
+    //message[2*i] = xhigh;
+   // message[2*i+1] = xlow;
+      message[2*i] = 0x02;
+      message[2*i+1] = 0x02;
     //Serial.println(x);
     sin_time++;
-    
+  // Serial.print(message[2*i],HEX); 
+ //  Serial.print(message[2*i+1],HEX);
     if(sin_time >= 32767) 
       sin_time = 0;
   }
+  //for(int i = 0; i< BUFF;i++)
+      //Serial.print(message[i],HEX);
+ // Serial.println(" ");
   //Serial.println("seno escrito");
-  Serial.write(message,sizeof(message));
+  Serial.write(message,BUFF);
+ // delay(200);
   return;
 
 }
