@@ -1,6 +1,6 @@
 
 #include "myudp.h"
-
+#include <QTextStream>
 MyUDP::MyUDP(QObject *parent) :
     QObject(parent)
 {
@@ -151,6 +151,49 @@ void MyUDP::parameter2Changed(int value){
         socket->writeDatagram(Data, *bcast, 8888);
 
     }
-
 }
+
+    void MyUDP::ChannelsSelect(bool value,ChannelSelect selected){
+       QByteArray Data;
+       Data.clear();
+       QTextStream out(stdout);
+       Data.resize(7);
+       for(int i = 0; i<4;i++)
+           Data[i] = 0x55;
+       Data[4] = 0x03;
+       Data[5] = 0x0;
+       Data[6] = 0x0;
+
+        switch(selected){
+            case ChannelSelect::aux1:
+                if(value)
+                    tryout +=0x1;
+                else if(tryout >= 1)
+                   tryout -=0x1;
+            break;
+            case ChannelSelect::aux2:
+                if(value)
+                    tryout +=0x2;
+                else if(tryout >= 2)
+                    tryout -=0x2;
+            break;
+            case ChannelSelect::aux3:
+                if(value)
+                    tryout +=0x4;
+                else if(tryout >= 4)
+                    tryout -=0x4;
+            break;
+            case ChannelSelect::aux4:
+                if(value)
+                    tryout +=0x08;
+                else if(tryout >= 8)
+                    tryout -=0x08;
+            break;
+        }
+        Data[6] = tryout;
+        qDebug() << "Value changed: "<< Data;
+         out << "Value changed= " << Data << "  Msg last byte = " << Data[6] << endl;
+        socket->writeDatagram(Data, *bcast, 8888);
+    }
+
 

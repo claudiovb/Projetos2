@@ -13,6 +13,8 @@ public:
     explicit MyUDP(QObject *parent = 0);
     void HelloUDP();
     void Transmission(bool transm);
+    enum ChannelSelect { aux1, aux2, aux3,aux4};
+    void ChannelsSelect(bool value,ChannelSelect selected);
 signals:
 
 public slots:
@@ -27,6 +29,7 @@ private:
     QHostAddress *bcast,*host;
     bool DbyteToShort(const char* pBuff,int size);
     bool SaveFile(ushort* audioBuff,int size);
+    char tryout = 0;
     //bool SaveFile(const char* audioBuff,int size);
     void CloseFile();
 
