@@ -87,7 +87,6 @@ void MyUDP::Transmission(bool transm){
 
 bool MyUDP::DbyteToShort(const char *pBuff,int size){
     ushort audioBuff[(size>>1)-2] = {0};
-    ushort assist = 0;
     bool sucess = false;
     for(int i =0; i<((size>>1)-2);i++){
         audioBuff[i] =  (((ushort)pBuff[2*i+2]) << 8) | (0xff & pBuff[2*i+3]);
@@ -127,7 +126,7 @@ void MyUDP::parameter1Changed(int value){
         Data.resize(7);
         for(int i = 0; i<4;i++)
             Data[i] = 0x55;
-        Data[4] = 0x01;
+        Data[4] = 0x02;
         Data[5] = (value >> 8);
         Data[6] = (value & 0xff);
         qDebug() << "Value changed: " << Data;
@@ -142,7 +141,7 @@ void MyUDP::parameter2Changed(int value){
         Data.resize(7);
         for(int i = 0; i<4;i++)
             Data[i] = 0x55;
-        Data[4] = 0x02;
+        Data[4] = 0x01;
         Data[5] = (value >> 8);
         Data[6] = (uchar)(value & 0x00ff);
         qDebug() << "Value changed: "<< value;
@@ -153,44 +152,127 @@ void MyUDP::parameter2Changed(int value){
     }
 }
 
-    void MyUDP::ChannelsSelect(bool value,ChannelSelect selected){
+    void MyUDP::ChannelsSelect(bool value,ChannelSelect selected,int in_out){
        QByteArray Data;
        Data.clear();
        QTextStream out(stdout);
        Data.resize(7);
        for(int i = 0; i<4;i++)
            Data[i] = 0x55;
-       Data[4] = 0x03;
-       Data[5] = 0x0;
-       Data[6] = 0x0;
+       if(in_out == 0){
+           Data[4] = 0x03;
+           Data[5] = 0x0;
+           Data[6] = 0x0;
 
-        switch(selected){
-            case ChannelSelect::aux1:
-                if(value)
-                    tryout +=0x1;
-                else if(tryout >= 1)
-                   tryout -=0x1;
-            break;
-            case ChannelSelect::aux2:
-                if(value)
-                    tryout +=0x2;
-                else if(tryout >= 2)
-                    tryout -=0x2;
-            break;
-            case ChannelSelect::aux3:
-                if(value)
-                    tryout +=0x4;
-                else if(tryout >= 4)
-                    tryout -=0x4;
-            break;
-            case ChannelSelect::aux4:
-                if(value)
-                    tryout +=0x08;
-                else if(tryout >= 8)
-                    tryout -=0x08;
-            break;
+            switch(selected){
+                case ChannelSelect::aux1:
+                    if(value)
+                        tryout +=0x1;
+                    else if(tryout >= 1)
+                       tryout -=0x1;
+                break;
+                case ChannelSelect::aux2:
+                    if(value)
+                        tryout +=0x2;
+                    else if(tryout >= 2)
+                        tryout -=0x2;
+                break;
+                case ChannelSelect::aux3:
+                    if(value)
+                        tryout +=0x4;
+                    else if(tryout >= 4)
+                        tryout -=0x4;
+                break;
+                case ChannelSelect::aux4:
+                    if(value)
+                        tryout +=0x08;
+                    else if(tryout >= 8)
+                        tryout -=0x08;
+                break;
+                default:
+                     qDebug() << "Deu xoli" ;
+                break;
+            }
+            Data[6] = tryout;
         }
-        Data[6] = tryout;
+       else if(in_out == 1){
+           Data[4] = 0x04;
+           Data[5] = 0x0;
+           Data[6] = 0x0;
+           switch(selected){
+               case ChannelSelect::aux1:
+                   if(value)
+                       tryout1 +=0x1;
+                   else if(tryout1 >= 1)
+                      tryout1 -=0x1;
+               break;
+               case ChannelSelect::aux2:
+                   if(value)
+                       tryout1 +=0x2;
+                   else if(tryout1 >= 2)
+                       tryout1 -=0x2;
+               break;
+               case ChannelSelect::aux3:
+                   if(value)
+                       tryout1 +=0x4;
+                   else if(tryout1 >= 4)
+                       tryout1 -=0x4;
+               break;
+               case ChannelSelect::aux4:
+                   if(value)
+                       tryout1 +=0x08;
+                   else if(tryout1 >= 8)
+                       tryout1 -=0x08;
+               break;
+           case ChannelSelect::reverb:
+               if(value)
+                   tryout1 +=0x10;
+               else if(tryout1 >= 16)
+                   tryout1 -=0x10;
+           break;
+
+           }
+           Data[6] = tryout1;
+       }
+       else if(in_out==2){
+           Data[4] = 0x05;
+           Data[5] = 0x0;
+           Data[6] = 0x0;
+           switch(selected){
+               case ChannelSelect::aux1:
+                   if(value)
+                       tryout2 +=0x1;
+                   else if(tryout2 >= 1)
+                      tryout2 -=0x1;
+               break;
+               case ChannelSelect::aux2:
+                   if(value)
+                       tryout2 +=0x2;
+                   else if(tryout2 >= 2)
+                       tryout2 -=0x2;
+               break;
+               case ChannelSelect::aux3:
+                   if(value)
+                       tryout2 +=0x4;
+                   else if(tryout2 >= 4)
+                       tryout2 -=0x4;
+               break;
+               case ChannelSelect::aux4:
+                   if(value)
+                       tryout2 +=0x08;
+                   else if(tryout2 >= 8)
+                       tryout2 -=0x08;
+               break;
+           case ChannelSelect::reverb:
+               if(value)
+                   tryout2 +=0x10;
+               else if(tryout2 >= 16)
+                   tryout2 -=0x10;
+           break;
+
+           }
+           Data[6] = tryout2;
+       }
         qDebug() << "Value changed: "<< Data;
          out << "Value changed= " << Data << "  Msg last byte = " << Data[6] << endl;
         socket->writeDatagram(Data, *bcast, 8888);
